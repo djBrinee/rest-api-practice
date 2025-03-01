@@ -1,4 +1,4 @@
-import requests 
+import requests
 
 
 # FIRST EXERCISE
@@ -6,21 +6,24 @@ import requests
 # MAIN STATEMENT:
 #  GET THE TOTAL DRAWS IN A SPECIFIC YEAR OF FOOTBALL MATCHES
 def get_total_matches(year:int):
-    url = f"https://jsonmock.hackerrank.com/api/football_matches?year={year}"
     try:
         totalDraws = 0
-        response = requests.get(url)
-        if response.status_code == 200:
-            gameGenerals = response.json()
-            for i in range(gameGenerals['page'], gameGenerals['total_pages'] + 1):
-                pagedUrl = f"https://jsonmock.hackerrank.com/api/football_matches?year={year}&page={i}"
-                currentPageGames = requests.get(pagedUrl)
-                if currentPageGames.status_code == 200:
-                    gameDetails = currentPageGames.json()['data']
-                    for game in gameDetails:
-                        if game['team1goals'] == game['team2goals']:
-                            totalDraws+= 1
-            return totalDraws
+        for goals in range(6):
+            page = 1
+            while True:
+                url = f'https://jsonmock.hackerrank.com/api/football_matches?year={year}&team1goals={goals}&team2goals={goals}&page={page}'
+                response = requests.get(url)
+                if response.status_code != 200:
+                    break
+
+                jsonResponse = response.json()
+
+                totalDraws += len(jsonResponse['data'])
+
+                if page >= jsonResponse['total_pages']:
+                    break
+                page += 1
+        return totalDraws
     except requests.exceptions.RequestException as e:
         print("Error", e)
 
@@ -81,4 +84,7 @@ def get_total_winner_goals(year:int, competition):
         return None
 
 
-print(get_total_winner_goals(2011, 'English Premier League'))
+# print(get_total_winner_goals(2011, 'English Premier League'))
+
+
+print(get_total_matches(2011))
